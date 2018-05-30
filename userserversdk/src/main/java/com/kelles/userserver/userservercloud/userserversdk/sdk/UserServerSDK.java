@@ -13,6 +13,7 @@ import okhttp3.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -53,6 +54,23 @@ public class UserServerSDK {
         } finally {
             if (response != null) response.close();
         }
+    }
+
+    public ResultDO grant(String id, String access_code, String file_id,String file_access_code){
+        return grant(id,access_code,file_id,file_access_code,false);
+    }
+
+    public ResultDO regrant(String id, String access_code, String file_id,String file_access_code){
+        return grant(id,access_code,file_id,file_access_code,true);
+    }
+
+    protected ResultDO grant(String id, String access_code, String file_id,String file_access_code,boolean regrant){
+        FileDTO fileDTO=new FileDTO();
+        fileDTO.setId(file_id);
+        fileDTO.setAccess_code(file_access_code);
+        List<FileDTO> fileDTOS=new ArrayList<>();
+        fileDTOS.add(fileDTO);
+        return grant(id,access_code,fileDTOS,regrant);
     }
 
     public ResultDO grant(String id, String access_code, List<FileDTO> fileDTOS){

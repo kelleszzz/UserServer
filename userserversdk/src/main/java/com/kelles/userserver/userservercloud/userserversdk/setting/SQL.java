@@ -2,8 +2,8 @@ package com.kelles.userserver.userservercloud.userserversdk.setting;
 
 public class SQL {
     public final static String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS " + Setting.MYSQL_TABLE_NAME_USERSERVER + "(\n" +
-            "id VARCHAR(40) PRIMARY KEY,\n" +
-            "access_code VARCHAR(100) NOT NULL,\n" +
+            "id VARCHAR(150) PRIMARY KEY,\n" +
+            "access_code VARCHAR(150) NOT NULL,\n" +
             "create_time BIGINT,\n" +
             "content BLOB\n" +
             ") DEFAULT CHARSET=utf8;";
