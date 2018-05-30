@@ -1,0 +1,9 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div>
+    <ul>
+        <a th:each="fileDTO:${fileDTOS}" th:text="${fileDTO.getFile_name()}" th:href="${fileServerSDK.getDisplay(fileDTO.getId(),fileDTO.getAccess_code())}"></a>
+    </ul>
+</div>
+</body>
+</html>
