@@ -12,6 +12,10 @@
 
     <dependencies>
         <dependency>
+            <artifactId>fileserversdk</artifactId>
+            <groupId>com.kelles.fileserver</groupId>
+        </dependency>
+        <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
         </dependency>
@@ -22,10 +26,6 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-        </dependency>
-        <dependency>
-            <artifactId>fileserversdk</artifactId>
-            <groupId>com.kelles.fileserver</groupId>
         </dependency>
     </dependencies>
 </project>

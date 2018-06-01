@@ -56,29 +56,29 @@ public class UserServerSDK {
         }
     }
 
-    public ResultDO grant(String id, String access_code, String file_id,String file_access_code){
-        return grant(id,access_code,file_id,file_access_code,false);
+    public ResultDO grant(String id, String access_code, String file_id, String file_access_code) {
+        return grant(id, access_code, file_id, file_access_code, false);
     }
 
-    public ResultDO regrant(String id, String access_code, String file_id,String file_access_code){
-        return grant(id,access_code,file_id,file_access_code,true);
+    public ResultDO regrant(String id, String access_code, String file_id, String file_access_code) {
+        return grant(id, access_code, file_id, file_access_code, true);
     }
 
-    protected ResultDO grant(String id, String access_code, String file_id,String file_access_code,boolean regrant){
-        FileDTO fileDTO=new FileDTO();
+    protected ResultDO grant(String id, String access_code, String file_id, String file_access_code, boolean regrant) {
+        FileDTO fileDTO = new FileDTO();
         fileDTO.setId(file_id);
         fileDTO.setAccess_code(file_access_code);
-        List<FileDTO> fileDTOS=new ArrayList<>();
+        List<FileDTO> fileDTOS = new ArrayList<>();
         fileDTOS.add(fileDTO);
-        return grant(id,access_code,fileDTOS,regrant);
+        return grant(id, access_code, fileDTOS, regrant);
     }
 
-    public ResultDO grant(String id, String access_code, List<FileDTO> fileDTOS){
-        return grant(id,access_code,fileDTOS,false);
+    public ResultDO grant(String id, String access_code, List<FileDTO> fileDTOS) {
+        return grant(id, access_code, fileDTOS, false);
     }
 
-    public ResultDO regrant(String id, String access_code, List<FileDTO> fileDTOS){
-        return grant(id,access_code,fileDTOS,true);
+    public ResultDO regrant(String id, String access_code, List<FileDTO> fileDTOS) {
+        return grant(id, access_code, fileDTOS, true);
     }
 
     protected ResultDO grant(String id, String access_code, List<FileDTO> fileDTOS, boolean regrant) {
@@ -86,7 +86,7 @@ public class UserServerSDK {
             return Util.getResultDO(false, Setting.STATUS_INVALID_PARAMETER, Setting.MESSAGE_INVALID_PARAMETER);
         }
         //清除无效内容
-        if (regrant){
+        if (regrant) {
             fileDTOS.removeIf(fileDTO -> Util.isEmpty(fileDTO.getId()));
         } else {
             fileDTOS.removeIf(fileDTO -> Util.isEmpty(fileDTO.getId()) || Util.isEmpty(fileDTO.getAccess_code()));
@@ -246,5 +246,9 @@ public class UserServerSDK {
     protected <T> ResultDO<T> responseToResultDO(Response response) {
         return responseToResultDO(response, new TypeToken<ResultDO<T>>() {
         }.getType());
+    }
+
+    public void setLog(boolean flagLog) {
+        com.kelles.fileserver.fileserversdk.setting.Setting.FLAG_LOG = flagLog;
     }
 }
