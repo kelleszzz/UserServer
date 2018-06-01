@@ -147,7 +147,7 @@ public class UserController extends BaseController {
             if (rowsAffected > 0) {
                 logger.info((Boolean.TRUE.equals(regrant) ? "Regrant" : "Grant") + " User, UserDTO = {}, Files = {}", gson.toJson(Util.userDTOInfo(userDTO)), files);
             } else {
-                logger.info((Boolean.TRUE.equals(regrant) ? "Regrant" : "Grant") + "Error, UserDTO = {}, Files = {}", gson.toJson(Util.userDTOInfo(userDTO)), files);
+                logger.info((Boolean.FALSE.equals(regrant) ? "Regrant" : "Grant") + "Error, UserDTO = {}, Files = {}", gson.toJson(Util.userDTOInfo(userDTO)), files);
             }
             return gson.toJson(Util.getResultDO(rowsAffected > 0, rowsAffected));
         } finally {
