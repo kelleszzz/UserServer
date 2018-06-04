@@ -19,10 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 @RequestMapping(Setting.PATH_USER)
@@ -56,7 +53,8 @@ public class UserController extends BaseController {
     @ResponseBody
     public String get(@RequestParam String id,
                       @RequestParam String access_code,
-                      @RequestParam(required = false) Boolean getContent) {
+                      @RequestParam(required = false) Boolean getContent,
+                      @RequestParam(required = false) Integer count) {
         Connection conn = null;
         UserDTO userDTO = null;
         try {
@@ -72,6 +70,22 @@ public class UserController extends BaseController {
             //get
             ResultDO<UserDTO> resultDO = Util.getResultDO(true);
             resultDO.setData(userDTO);
+            //根据CreateTime排序
+            List<FileDTO> fileDTOS = userDTO.getContent();
+            Collections.sort(fileDTOS, new Comparator<FileDTO>() {
+                @Override
+                public int compare(FileDTO o1, FileDTO o2) {
+                    if (o1.getCreate_time() == null || o2.getCreate_time() == null) return 0;
+                    return o1.getCreate_time().intValue() > o2.getCreate_time().intValue() ? 1 : -1;
+                }
+            });
+            if (count != null) {
+                List<FileDTO> filteredFileDTOS = new ArrayList<>();
+                for (int i = 0; i < count.intValue(); i++) {
+                    filteredFileDTOS.add(fileDTOS.get(i));
+                }
+                userDTO.setContent(filteredFileDTOS);
+            }
             return gson.toJson(resultDO);
         } catch (Exception e) {
             logger.error("Test Insert, userDTO = {}", gson.toJson(Util.userDTOInfo(userDTO)));
