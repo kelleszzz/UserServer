@@ -3,6 +3,7 @@ package com.kelles.userserver.userservercloud.controller;
 import com.google.gson.JsonSyntaxException;
 import com.kelles.fileserver.fileserversdk.data.FileDTO;
 import com.kelles.fileserver.fileserversdk.data.ResultDO;
+import com.kelles.fileserver.fileserversdk.sdk.FileServerSDK;
 import com.kelles.userserver.userservercloud.service.UserDatabaseService;
 import com.kelles.userserver.userservercloud.userserversdk.data.UserDTO;
 import com.kelles.userserver.userservercloud.userserversdk.setting.Setting;
@@ -26,6 +27,9 @@ import java.util.*;
 public class UserController extends BaseController {
     @Autowired
     UserDatabaseService userDatabaseService;
+
+    @Autowired
+    FileServerSDK fileServerSDK;
 
     @RequestMapping(Setting.PATH_INSERT)
     @ResponseBody
@@ -67,28 +71,43 @@ public class UserController extends BaseController {
             if (!securityCheck(id, access_code, userDTO)) {
                 return gson.toJson(Util.getResultDO(false, Setting.STATUS_ACCESS_DENIED, Setting.MESSAGE_ACCESS_DENIED));
             }
-            //get
-            ResultDO<UserDTO> resultDO = Util.getResultDO(true);
-            resultDO.setData(userDTO);
+            //获取User下的全部授权文件
+            List<FileDTO> fileDTOS = new ArrayList<>();
+            for (Iterator<FileDTO> iterator = userDTO.getContent().iterator(); iterator.hasNext(); ) {
+                FileDTO fileDTO = iterator.next();
+                if (Util.isEmpty(fileDTO.getId()) || Util.isEmpty(fileDTO.getAccess_code())) continue;
+                ResultDO<FileDTO> resultDO = fileServerSDK.get(fileDTO.getId(), fileDTO.getAccess_code(), false);
+                if (!resultDO.getSuccess() || resultDO.getData() == null) continue;
+                FileDTO accessFileDTO = resultDO.getData();
+                fileDTOS.add(accessFileDTO);
+            }
             //根据CreateTime排序
-            List<FileDTO> fileDTOS = userDTO.getContent();
             Collections.sort(fileDTOS, new Comparator<FileDTO>() {
                 @Override
                 public int compare(FileDTO o1, FileDTO o2) {
+                    return -reverseCompare(o1, o2);
+                }
+
+                protected int reverseCompare(FileDTO o1, FileDTO o2) {
                     if (o1.getCreate_time() == null || o2.getCreate_time() == null) return 0;
                     return o1.getCreate_time().intValue() > o2.getCreate_time().intValue() ? 1 : -1;
                 }
             });
+            //过滤
             if (count != null) {
                 List<FileDTO> filteredFileDTOS = new ArrayList<>();
-                for (int i = 0; i < count.intValue(); i++) {
+                for (int i = 0; i < count.intValue() && i < fileDTOS.size(); i++) {
                     filteredFileDTOS.add(fileDTOS.get(i));
                 }
                 userDTO.setContent(filteredFileDTOS);
             }
+            //get
+            ResultDO<UserDTO> resultDO = Util.getResultDO(true);
+            resultDO.setData(userDTO);
+            logger.info("Get, userDTO = {}, count = {}", gson.toJson(Util.userDTOInfo(userDTO)), count);
             return gson.toJson(resultDO);
         } catch (Exception e) {
-            logger.error("Test Insert, userDTO = {}", gson.toJson(Util.userDTOInfo(userDTO)));
+            logger.error("Get Error, userDTO = {}", gson.toJson(Util.userDTOInfo(userDTO)));
             e.printStackTrace();
             return gson.toJson(Util.getResultDO(false, Setting.STATUS_ERROR));
         } finally {

@@ -171,12 +171,26 @@ public class UserServerSDK {
         }
     }
 
+
+    public ResultDO<UserDTO> get(String id, String access_code) {
+        return get(id, access_code, true, Integer.MAX_VALUE);
+    }
+
+
+    public ResultDO<UserDTO> get(String id, String access_code, int count) {
+        return get(id, access_code, true, count);
+    }
+
+    public ResultDO<UserDTO> get(String id, String access_code, boolean getContent) {
+        return get(id, access_code, getContent, Integer.MAX_VALUE);
+    }
+
     /**
      * @param id
      * @param access_code
      * @return
      */
-    public ResultDO<UserDTO> get(String id, String access_code, boolean getContent) {
+    public ResultDO<UserDTO> get(String id, String access_code, boolean getContent, int count) {
         if (Util.isEmpty(id) || Util.isEmpty(access_code)) {
             return Util.<UserDTO>getResultDO(false, Setting.STATUS_INVALID_PARAMETER, Setting.MESSAGE_INVALID_PARAMETER);
         }
@@ -188,6 +202,7 @@ public class UserServerSDK {
                     .addQueryParameter("id", id)
                     .addQueryParameter("access_code", access_code)
                     .addQueryParameter("getContent", String.valueOf(getContent))
+                    .addQueryParameter("count", String.valueOf(count))
                     .build();
             Request request = new Request.Builder().url(httpUrl).build();
             response = client.newCall(request).execute();
@@ -208,10 +223,6 @@ public class UserServerSDK {
         } finally {
             if (response != null) response.close();
         }
-    }
-
-    public ResultDO<UserDTO> get(String id, String access_code) {
-        return get(id, access_code, true);
     }
 
     /**

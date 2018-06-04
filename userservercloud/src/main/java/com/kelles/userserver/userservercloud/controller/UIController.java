@@ -29,7 +29,7 @@ public class UIController extends BaseController {
     FileServerSDK fileServerSDK;
 
     @Autowired
-    UserDatabaseService userDatabaseService;
+    UserServerSDK userServerSDK;
 
     @RequestMapping(Setting.PATH_INDEX)
     public String index(Model model) {
@@ -42,36 +42,16 @@ public class UIController extends BaseController {
     @RequestMapping(Setting.PATH_GET)
     public Object get(@RequestParam String id,
                       @RequestParam String access_code,
+                      @RequestParam(required = false) Integer count,
                       Model model) {
-        Connection conn = null;
-        UserDTO userDTO = null;
-        try {
-            conn = userDatabaseService.getConnection();
-            //获取UserDTO并作安全检查
-            userDTO = userDatabaseService.getUserDTO(id, true, conn);
-            if (userDTO == null) {
-                return gson.toJson(Util.getResultDO(true, Setting.STATUS_USER_NOT_FOUND, Setting.MESSAGE_USER_NOT_FOUND));
-            }
-            if (!securityCheck(id, access_code, userDTO)) {
-                return gson.toJson(Util.getResultDO(false, Setting.STATUS_ACCESS_DENIED, Setting.MESSAGE_ACCESS_DENIED));
-            }
-        } finally {
-            closeConnection(conn);
+        ResultDO<UserDTO> resultDO = userServerSDK.get(id, access_code, count == null ? Integer.MAX_VALUE : count.intValue());
+        if (resultDO.getSuccess()) {
+            List<FileDTO> fileDTOS = resultDO.getData().getContent();
+            //添加至Model
+            model.addAttribute("fileServerSDK", fileServerSDK);
+            model.addAttribute("fileDTOS", fileDTOS);
+            logger.info("UIController#Get, UserDTO = {}, fileDTOs = {}", gson.toJson(resultDO.getData()), gson.toJson(fileDTOS));
         }
-        //获取User下的全部授权文件
-        List<FileDTO> fileDTOS = new ArrayList<>();
-        for (Iterator<FileDTO> iterator = userDTO.getContent().iterator(); iterator.hasNext(); ) {
-            FileDTO fileDTO = iterator.next();
-            if (Util.isEmpty(fileDTO.getId()) || Util.isEmpty(fileDTO.getAccess_code())) continue;
-            ResultDO<FileDTO> resultDO = fileServerSDK.get(fileDTO.getId(), fileDTO.getAccess_code(), false);
-            if (!resultDO.getSuccess() || resultDO.getData() == null) continue;
-            FileDTO accessFileDTO = resultDO.getData();
-            fileDTOS.add(accessFileDTO);
-        }
-        //添加至Model
-        model.addAttribute("fileServerSDK", fileServerSDK);
-        model.addAttribute("fileDTOS", fileDTOS);
-        logger.info("UIController#Get, UserDTO = {}, fileDTOs = {}", gson.toJson(userDTO), gson.toJson(fileDTOS));
         return "displayGet";
     }
 
